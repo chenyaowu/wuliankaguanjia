@@ -40,13 +40,25 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    host: 'localhost',
     port: port,
-    open: true,
-    overlay: {
-      warnings: false,
-      errors: true
-    },
-    before: require('./mock/mock-server.js')
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': '/iot'
+        },
+        onProxyRes(proxyRes, req, res) {
+          if (proxyRes.headers['set-cookie']) {
+            proxyRes.headers['set-cookie'] = proxyRes.headers['set-cookie'].map(v => {
+              // /coss/app是后端服务设置的上下文跟， 由于是本地所以需要添加一个代理/api（于proxy端口的代理是一样的）
+              return v.replace('/iot', '/')
+            })
+          }
+        }
+      }
+    }
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

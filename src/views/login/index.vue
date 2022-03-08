@@ -59,7 +59,6 @@
 
 <script>
 import { validUsername } from '@/utils/validate'
-import { getToken } from '@/utils/auth'
 import store from '@/store'
 
 export default {
@@ -116,10 +115,6 @@ export default {
     }
   },
   methods: {
-    checkCapslock(e) {
-      const { key } = e
-      this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
-    },
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -137,7 +132,6 @@ export default {
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
               // 带查询参数，类似变成 /register?plan=private
-              console.log(store.getters.roles)
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
             })
