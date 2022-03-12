@@ -19,31 +19,55 @@ router.beforeEach(async(to, from, next) => {
 
   // determine whether the user has logged in
   const hasToken = getToken()
-
   if (hasToken) {
     if (to.path === '/login') {
+      const userType = store.getters.userType
       // if is logged in, redirect to the home page
-      next({ path: '/' })
-      NProgress.done() // hack: https://github.com/PanJiaChen/vue-element-admin/pull/2939
+      if (userType === 0) {
+        next({ path: '/console' })
+      } else if (userType === 1) {
+        next({ path: '/platform' })
+      } else if (userType === 2) {
+        next({ path: '/my' })
+      } else {
+        next({ path: '/' })
+      }
+      NProgress.done()
     } else {
       // determine whether the user has obtained his permission roles through getInfo
-      const hasRoles = store.getters.roles && store.getters.roles.length > 0
-      if (hasRoles) {
+      const userType = store.getters.userType
+      if (userType !== '') {
+        if (to.path === '/') {
+          if (userType === 0) {
+            next({ path: '/console' })
+          } else if (userType === 1) {
+            next({ path: '/platform' })
+          } else if (userType === 2) {
+            next({ path: '/my' })
+          }
+          NProgress.done()
+        }
         next()
+        NProgress.done()
       } else {
         try {
           // get user info
           // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
-          const { roles } = await store.dispatch('user/getInfo')
+          const { uris, userType } = await store.dispatch('user/getInfo')
+
           // generate accessible routes map based on roles
-          const accessRoutes = await store.dispatch('permission/generateRoutes', roles)
+          const accessRoutes = await store.dispatch('permission/generateRoutes', uris)
 
           // dynamically add accessible routes
           router.addRoutes(accessRoutes)
 
           // hack method to ensure that addRoutes is complete
           // set the replace: true, so the navigation will not leave a history record
-          next({ ...to, replace: true })
+          // next({ ...to, replace: true })
+          console.log(userType)
+          if (userType === 0) {
+            next({ path: '/console', replace: true })
+          }
         } catch (error) {
           // remove token and go to login page to re-login
           await store.dispatch('user/resetToken')

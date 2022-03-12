@@ -55,11 +55,20 @@ export const constantRoutes = [
     path: '/404',
     component: () => import('@/views/error-page/404'),
     hidden: true
-  },
+  }
+
+]
+
+/**
+ * asyncRoutes
+ * the routes that need to be dynamically loaded based on user roles
+ */
+export const asyncRoutes = [
+  // 404 page must be placed at the end !!!
   {
-    path: '/',
+    path: '/console',
     component: Layout,
-    redirect: '/index',
+    redirect: '/console/index',
     children: [
       {
         path: 'index',
@@ -79,24 +88,16 @@ export const constantRoutes = [
         path: 'user/list',
         component: () => import('@/views/console/system/user/index'),
         name: 'ConsoleSystemUserList',
-        meta: { title: '用户管理', icon: 'user' }
+        meta: { title: '用户管理', icon: 'user', uri: 'console.page.user.list' }
       },
       {
         path: 'user/config/list',
         component: () => import('@/views/console/system/user-config/index'),
         name: 'ConsoleSystemUserConfigList',
-        meta: { title: '用户配置', icon: 'user' }
+        meta: { title: '用户配置', icon: 'user', uri: 'console.page.user.config.list' }
       }
     ]
-  }
-]
-
-/**
- * asyncRoutes
- * the routes that need to be dynamically loaded based on user roles
- */
-export const asyncRoutes = [
-  // 404 page must be placed at the end !!!
+  },
   { path: '*', redirect: '/404', hidden: true }
 ]
 

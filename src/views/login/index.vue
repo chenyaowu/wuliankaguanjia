@@ -1,59 +1,105 @@
 <template>
   <div class="login-container">
-    <el-row>
-      <el-col :xs="24" :sm="24" :md="12" :lg="16" :xl="16">
-        <div style="color: transparent">占位符</div>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
-        <el-form
-          ref="loginForm"
-          :model="loginForm"
-          :rules="loginRules"
-          class="login-form"
-          label-position="left"
-        >
-          <div class="title">hello !</div>
-          <div class="title-tips">欢迎来到物联卡管家！</div>
-          <el-form-item style="margin-top: 40px" prop="username">
-            <span class="svg-container">
-              <svg-icon icon-class="user" />
-            </span>
-            <el-input
-              ref="username"
-              v-model.trim="loginForm.username"
-              placeholder="请输入用户名"
-              tabindex="1"
-              type="text"
-            />
-          </el-form-item>
-          <el-form-item prop="password">
-            <span class="svg-container">
-              <svg-icon icon-class="password" />
-            </span>
-            <el-input
-              :key="passwordType"
-              ref="password"
-              v-model.trim="loginForm.password"
-              :type="passwordType"
-              tabindex="2"
-              placeholder="请输入密码"
-              @keyup.enter.native="handleLogin"
-            />
-            <span class="show-pwd" @click="showPwd">
-              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-            </span>
-          </el-form-item>
-          <el-button
-            :loading="loading"
-            class="login-btn"
-            type="primary"
-            @click="handleLogin"
+    <el-container>
+      <el-header>
+        <div class="web-app">
+          <span>物联卡管家</span>
+        </div>
+      </el-header>
+      <el-container>
+        <el-aside width="70%"></el-aside>
+        <el-main>
+          <el-form
+            ref="loginForm"
+            :model="loginForm"
+            :rules="loginRules"
+            class="login-form"
+            label-position="left"
           >
-            登录
-          </el-button>
-        </el-form>
-      </el-col>
-    </el-row>
+            <div class="title">hello !</div>
+            <div class="title-tips">欢迎来到物联卡管家！</div>
+            <el-form-item style="margin-top: 40px" prop="username">
+              <span class="svg-container">
+                <svg-icon icon-class="user" />
+              </span>
+              <el-input
+                ref="username"
+                v-model.trim="loginForm.username"
+                placeholder="请输入用户名"
+                tabindex="1"
+                type="text"
+              />
+            </el-form-item>
+            <el-form-item prop="password">
+              <span class="svg-container">
+                <svg-icon icon-class="password" />
+              </span>
+              <el-input
+                :key="passwordType"
+                ref="password"
+                v-model.trim="loginForm.password"
+                :type="passwordType"
+                tabindex="2"
+                placeholder="请输入密码"
+                @keyup.enter.native="handleLogin"
+              />
+              <span class="show-pwd" @click="showPwd">
+                <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+              </span>
+            </el-form-item>
+            <el-button
+              :loading="loading"
+              class="login-btn"
+              type="primary"
+              @click="handleLogin"
+            >
+              登录
+            </el-button>
+          </el-form>
+        </el-main>
+      </el-container>
+      <el-footer>
+        <div class="footer">
+          <div class="wrap">
+            <div class="footer-service">
+              <dl class="service-about">
+                <dt>公司信息</dt>
+                <dd><a target="_blank">公司简介</a></dd>
+                <dd><a target="_blank">资讯动态</a></dd>
+              </dl>
+              <dl class="service-support">
+                <dt>联系我们</dt>
+                <dd><a target="_blank">客服服务</a></dd>
+                <dd><a target="_blank">合作洽谈</a></dd>
+                <dd><a target="_blank">帮助中心</a></dd>
+              </dl>
+              <dl class="service-friend">
+                <dt>关于我们</dt>
+                <dd><a target="_blank">官方微信</a></dd>
+                <dd><a target="_blank">腾讯微博</a></dd>
+                <dd><a target="_blank">新浪微博</a></dd>
+              </dl>
+              <dl class="service-help">
+                <dt>法律信息</dt>
+                <dd><a target="_blank">服务协议</a></dd>
+                <dd><a target="_blank">私隐政策</a></dd>
+                <dd><a target="_blank">法律声明</a></dd>
+              </dl>
+              <dl class="service-qrcode">
+                <dt>扫码联系客服</dt>
+                <dd>
+                  <img class="img-qrcode"  src="https://image.wulianguanjia.cn/file/images/favicon/customer_servicer.jpg" alt="">
+                </dd>
+              </dl>
+            </div>
+            <div class="footer-copyright">
+              <a id="beian" href="https://beian.miit.gov.cn">粤ICP备09032741号</a>
+              <p>Copyright © 2020-2022 All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </el-footer>
+    </el-container>
   </div>
 </template>
 
@@ -159,9 +205,24 @@ export default {
 <style lang="scss" scoped>
 .login-container {
   height: 100vh;
-  background: url('~@/assets/login_images/background2.jpg') center center fixed
-  no-repeat;
-  background-size: cover;
+  .web-app{
+    padding: .7rem 0 .7rem 3rem;
+    background-image: url('~@/assets/login_images/logo.png');
+    background-repeat: no-repeat;
+    background-position: .5rem center;
+    background-size: 32px 32px;
+  }
+  .el-aside {
+    height: 88vh;
+    margin-bottom: 0;
+    background: url('~@/assets/login_images/background2.jpg');
+    background-size: cover;
+  }
+  .el-header {
+    background-color: #fff;
+    color: #333;
+    line-height: 30px;
+  }
   .title {
     font-size: 54px;
     font-weight: 500;
@@ -285,6 +346,71 @@ export default {
       cursor: pointer;
       user-select: none;
     }
+  }
+  .el-footer {
+    background-color: #404343;
+    color: #9D9D9D;
+    height: 100%!important;
+    font-size: 14px;
+  }
+  .footer .wrap{
+    padding: 43px 0 23px;
+  }
+  .wrap{
+    width: 1120px;
+    margin: 0 auto;
+  }
+  .footer a{
+    color: #9D9D9D !important;
+  }
+  a{
+    text-decoration: none;
+  }
+  .footer .footer-service{
+    overflow: hidden;
+  }
+  .footer .footer-service .service-about{
+    padding-left: 0;
+    margin-left: 0;
+    border-left: none;
+  }
+  .footer .footer-service dl{
+    float: left;
+    padding-left: 43px;
+    margin-left: 43px;
+    min-height: 155px;
+    height: auto!important;
+    height: 155px;
+  }
+  .footer .footer-service .service-qrcode{
+    float: right;
+    margin-left: 0;
+    border-left: 1px solid #484a4a;
+  }
+  .footer .footer-service .service-qrcode .img-qrcode{
+    width: 129px;
+    height: 129px;
+  }
+  .footer .footer-service .service-qrcode dt{
+    font-size: 10px;
+    margin-bottom: 12px;
+  }
+  .footer .footer-service dt{
+    color: #fff;
+    margin-bottom: 21px;
+  }
+  .footer .footer-service dd{
+    margin-top: 7px;
+  }
+  dd{
+    display: block;
+    margin-inline-start: 40px;
+    margin-left: 0px;
+  }
+  .footer .footer-copyright{
+    margin-top: 30px;
+    text-align: center;
+    font-size: 12px;
   }
 }
 </style>
