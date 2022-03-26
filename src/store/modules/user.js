@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
@@ -65,7 +65,7 @@ const actions = {
               userType: 0,
               introduction: 'I am a super administrator',
               avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-              name: 'Super Admin'
+              name: 'Super Admin2'
             }
           }
         const { data } = response
@@ -101,6 +101,7 @@ const actions = {
         commit('SET_ROLES', [])
         removeToken()
         resetRouter()
+        location.reload()
 
         // reset visited views and cached views
         // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485

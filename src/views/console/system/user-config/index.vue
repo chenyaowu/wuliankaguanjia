@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import PlatformChooser from '@/components/PlatformChooser'
+import PlatformChooser from '@/views/console/components/PlatformChooser'
 export default {
   name: 'ConsoleSystemUserConfigList',
   components: {

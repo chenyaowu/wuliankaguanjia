@@ -13,12 +13,12 @@ const whiteList = ['/login', '/auth-redirect'] // no redirect whitelist
 router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
-
   // set page title
   document.title = getPageTitle(to.meta.title)
 
   // determine whether the user has logged in
   const hasToken = getToken()
+
   if (hasToken) {
     if (to.path === '/login') {
       const userType = store.getters.userType
@@ -34,7 +34,6 @@ router.beforeEach(async(to, from, next) => {
       }
       NProgress.done()
     } else {
-      // determine whether the user has obtained his permission roles through getInfo
       const userType = store.getters.userType
       if (userType !== '') {
         if (to.path === '/') {
@@ -57,16 +56,25 @@ router.beforeEach(async(to, from, next) => {
 
           // generate accessible routes map based on roles
           const accessRoutes = await store.dispatch('permission/generateRoutes', uris)
-
           // dynamically add accessible routes
           router.addRoutes(accessRoutes)
 
           // hack method to ensure that addRoutes is complete
           // set the replace: true, so the navigation will not leave a history record
           // next({ ...to, replace: true })
-          console.log(userType)
-          if (userType === 0) {
-            next({ path: '/console', replace: true })
+          // if (userType === 0) {
+          //   next({ path: '/console', replace: true })
+          // }
+          if (to.path === '/') {
+            if (userType === 0) {
+              next({ path: '/console' })
+            } else if (userType === 1) {
+              next({ path: '/platform' })
+            } else if (userType === 2) {
+              next({ path: '/my' })
+            }
+          } else {
+            next({ ...to, replace: true })
           }
         } catch (error) {
           // remove token and go to login page to re-login

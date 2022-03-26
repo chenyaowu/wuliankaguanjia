@@ -4,7 +4,7 @@
       <div class="web-app"><a>物联卡管家</a></div>
     </el-header>
     <el-main>
-      <div class="login-bg-div" >
+      <div class="login-bg-div">
         <el-row>
           <el-col style="text-align: center;margin-top: 60px;">
             <el-form
@@ -29,9 +29,9 @@
                 />
               </el-form-item>
               <el-form-item prop="password">
-            <span class="svg-container">
-              <svg-icon icon-class="password" />
-            </span>
+                <span class="svg-container">
+                  <svg-icon icon-class="password" />
+                </span>
                 <el-input
                   :key="passwordType"
                   ref="password"
@@ -42,8 +42,8 @@
                   @keyup.enter.native="handleLogin"
                 />
                 <span class="show-pwd" @click="showPwd">
-              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-            </span>
+                  <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+                </span>
               </el-form-item>
               <el-button
                 :loading="loading"
@@ -103,22 +103,21 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-import store from '@/store'
+import { isLength } from '@/utils/validate'
 
 export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('请输入用户名'))
+      if (!isLength(value, 1, 32)) {
+        callback(new Error('用户名不合法！'))
       } else {
         callback()
       }
     }
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('密码不能少于6位'))
+      if (!isLength(value, 6, 32)) {
+        callback(new Error('密码不合法！'))
       } else {
         callback()
       }
@@ -133,7 +132,6 @@ export default {
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       passwordType: 'password',
-      capsTooltip: false,
       loading: false,
       showDialog: false,
       redirect: undefined,
@@ -177,7 +175,8 @@ export default {
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
               // 带查询参数，类似变成 /register?plan=private
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+              console.log(this.redirect)
+              this.$router.push({ path: this.redirect || '/' })
               this.loading = false
             })
             .catch(() => {
@@ -231,7 +230,7 @@ export default {
   }
   .el-footer{
     position: relative;
-    margin:  0px auto;
+    margin:  0 auto;
     padding: 7px 0 9px;
     width: 1200px;
     .wrap{

@@ -1,6 +1,14 @@
 /**
- * Created by PanJiaChen on 16/11/18.
+ * Created by chenyaowu on 2022/03/16.
  */
+
+/**
+ * @param {string} input
+ * @param {int} n
+ * @param {int} m
+ * @returns {boolean}
+ */
+export function isLength(input, n, m) { if (input == null || n < 0 || m < 0 || n > m) { return false } return input.length >= n && input.length <= m }
 
 /**
  * @param {string} path
