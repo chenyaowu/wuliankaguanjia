@@ -83,7 +83,7 @@
     </el-table>
     <el-pagination
       :current-page="userSearchForm.pageNumber"
-      :page-sizes="[15, 30, 50, 100, 200, 300, 400]"
+      :page-sizes="[10, 15, 30, 50, 100, 200, 300, 400]"
       :page-size="userSearchForm.pageSize"
       :total="userSearchForm.totalPage"
       layout="total, sizes, prev, pager, next, jumper"
@@ -102,7 +102,7 @@
           </el-select>
         </el-form-item>
         <el-form-item v-show="addUserDialogForm.showPlatform" label="平台" label-width="120px" prop="platformName">
-          <el-input ref="platformName" v-model="addUserDialogForm.platformName" disabled @click.native="platformChooserVisible = true" />
+          <el-input ref="platformName" v-model="addUserDialogForm.platformName" disabled @click.native="platformChooser.visible = true" />
         </el-form-item>
         <el-form-item v-show="addUserDialogForm.showCompany" label="公司" label-width="120px" prop="companyName">
           <el-input ref="companyName" v-model="addUserDialogForm.companyName" disabled @click.native="showCompanyChooser" />
@@ -143,21 +143,49 @@
         <el-button type="primary" @click="resetPassword">确 定</el-button>
       </div>
     </el-dialog>
-    <platform-chooser :parent-platform-chooser-visible="platformChooserVisible" @doClosePlatformChooser="switchPlatformChooserVisible" @doPlatformChooserSelect="getPlatformChooserData" />
-    <company-chooser :parent-company-chooser-visible="companyChooserVisible" :platform-id="addUserDialogForm.platformId" @doCloseCompanyChooser="switchCompanyChooserVisible" @doCompanyChooserSelect="getCompanyChooserData" />
+    <chooser
+      :title="platformChooser.title"
+      :visible="platformChooser.visible"
+      :data="platformChooser.data"
+      :columns="platformChooser.columns"
+      :search-items="platformChooser.searchItems"
+      :current-page="platformChooser.searchForm.pageNumber"
+      :page-size="platformChooser.searchForm.pageSize"
+      :total="platformChooser.searchForm.totalPage"
+      @handleSizeChange="handlePlatformChooseSizeChange"
+      @handleCurrentChange="handlePlatformChooseCurrentChange"
+      @close="switchPlatformChooserVisible"
+      @search="platformChooserSearch"
+      @doSelect="getPlatformChooserData"
+    />
+    <chooser
+      :title="companyChooser.title"
+      :visible="companyChooser.visible"
+      :data="companyChooser.data"
+      :columns="companyChooser.columns"
+      :search-items="companyChooser.searchItems"
+      :current-page="companyChooser.searchForm.pageNumber"
+      :page-size="companyChooser.searchForm.pageSize"
+      :total="companyChooser.searchForm.totalPage"
+      @handleSizeChange="handleCompanyChooseSizeChange"
+      @handleCurrentChange="handleCompanyChooseCurrentChange"
+      @close="switchCompanyChooserVisible"
+      @search="companyChooserSearch"
+      @doSelect="getCompanyChooserData"
+    />
   </div>
 </template>
 
 <script>
-import PlatformChooser from '@/views/console/components/PlatformChooser'
-import CompanyChooser from '@/views/console/components/CompanyChooser'
+import Chooser from '@/components/Chooser'
 import { getUser, saveUser, deleteUser, deleteUserAnyway, resetPassword, switchUserStatus } from '@/api/console/user'
+import { getPlatform } from '@/api/console/platform'
+import { getCompany } from '@/api/console/company'
 import { isLength } from '@/utils/validate'
 export default {
   name: 'ConsoleSystemUserList',
   components: {
-    PlatformChooser,
-    CompanyChooser
+    Chooser
   },
   data() {
     const validateUsername = (rule, value, callback) => {
@@ -183,8 +211,6 @@ export default {
       }
     }
     return {
-      platformChooserVisible: false,
-      companyChooserVisible: false,
       resetPasswordDialog: false,
       resetPasswordId: '',
       newPassword: '',
@@ -193,7 +219,7 @@ export default {
         type: '',
         status: '',
         pageNumber: 1,
-        pageSize: 15,
+        pageSize: 10,
         totalPage: 100
       },
       addUserDialogForm: {
@@ -218,23 +244,92 @@ export default {
       },
       userTableData: [],
       multipleSelection: [],
-      size: ''
+      size: '',
+      platformChooser: {
+        title: '选择平台',
+        visible: false,
+        data: [],
+        columns: [
+          {
+            'number': 1,
+            'property': 'name',
+            'label': '平台'
+          },
+          {
+            'number': 2,
+            'property': 'username',
+            'label': '用户'
+          },
+          {
+            'number': 3,
+            'property': 'companyName',
+            'label': '公司名'
+          }
+        ],
+        searchItems: [
+          {
+            'number': 1,
+            'model': '',
+            'label': '名称'
+          }
+        ],
+        inputKey: '', // 控制选择器填入位置
+        searchForm: {
+          name: '',
+          pageNumber: 1,
+          pageSize: 5,
+          totalPage: 5
+        }
+      },
+      companyChooser: {
+        title: '选择公司',
+        visible: false,
+        data: [],
+        columns: [
+          {
+            'number': 1,
+            'property': 'companyName',
+            'label': '公司'
+          },
+          {
+            'number': 2,
+            'property': 'username',
+            'label': '用户'
+          }
+        ],
+        searchItems: [
+          {
+            'number': 1,
+            'model': '',
+            'label': '名称'
+          }
+        ],
+        inputKey: '', // 控制选择器填入位置
+        searchForm: {
+          companyName: '',
+          pageNumber: 1,
+          pageSize: 5,
+          totalPage: 5
+        }
+      }
     }
   },
   created() {
     this.loadData()
+    this.loadPlatformChooserData()
+    this.loadCompanyChooserData()
   },
   methods: {
     delUser() {
-      this.$confirm('确定要删除吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        // 拿到选中的数据
-        const val = this.multipleSelection
-        // 如果选中数据存在
-        if (val) {
+      // 拿到选中的数据
+      const val = this.multipleSelection
+      if (val.length > 0) {
+        this.$confirm('确定要删除吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // 如果选中数据存在
           const irender = {
             '45010': '参数不合法！',
             '45020': '存在admin用户不可删除！',
@@ -261,19 +356,23 @@ export default {
           }).catch(error => {
             console.log(error)
           })
-        }
-      }).catch(() => {})
+        }).catch(() => {})
+      } else {
+        this.$message({
+          message: '请选择一条记录',
+          type: 'warning'
+        })
+      }
     },
     delUserAnyway() {
-      this.$confirm('确定要删除吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        // 拿到选中的数据
-        const val = this.multipleSelection
-        // 如果选中数据存在
-        if (val) {
+      // 拿到选中的数据
+      const val = this.multipleSelection
+      if (val.length > 0) {
+        this.$confirm('确定要删除吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
           const irender = {
             '45010': '参数不合法！',
             '45020': '存在admin用户不可删除！',
@@ -304,8 +403,13 @@ export default {
           }).catch(error => {
             console.log(error)
           })
-        }
-      }).catch(() => {})
+        }).catch(() => {})
+      } else {
+        this.$message({
+          message: '请选择一条记录',
+          type: 'warning'
+        })
+      }
     },
     loadData() {
       const params = {
@@ -329,12 +433,6 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
-    switchPlatformChooserVisible(val) {
-      this.platformChooserVisible = val
-    },
-    switchCompanyChooserVisible(val) {
-      this.companyChooserVisible = val
-    },
     // 每页条数变化
     handleSizeChange(val) {
       this.userSearchForm.pageSize = val
@@ -344,15 +442,6 @@ export default {
     handleCurrentChange(val) {
       this.userSearchForm.pageNumber = val
       this.loadData()
-    },
-    getPlatformChooserData(val) {
-      this.addUserDialogForm.platformId = val[0].idString
-      this.addUserDialogForm.platformName = val[0].name
-    },
-    getCompanyChooserData(val) {
-      console.log(val)
-      this.addUserDialogForm.companyId = val[0].idString
-      this.addUserDialogForm.companyName = val[0].companyName
     },
     doSaveAddUserDialog() {
       this.$refs.addUserDialogForm.validate(valid => {
@@ -400,13 +489,6 @@ export default {
           return false
         }
       })
-    },
-    showCompanyChooser() {
-      if (this.addUserDialogForm.platformId) {
-        this.companyChooserVisible = true
-      } else {
-        this.$message.error('请先选择平台')
-      }
     },
     // 用户类型变化
     addUserDialogFormTypeChange() {
@@ -467,8 +549,96 @@ export default {
         this.resetPasswordId = ''
         this.newPassword = ''
       }).catch(() => {})
-    }
+    },
+    // 平台选择器开始
+    loadPlatformChooserData() {
+      const params = {
+        name: this.platformChooser.searchForm.name,
+        pageNumber: this.platformChooser.searchForm.pageNumber,
+        pageSize: this.platformChooser.searchForm.pageSize
+      }
+      getPlatform(params).then(response => {
+        const code = response.code
+        const data = response.data
+        if (code === '25200') {
+          this.platformChooser.data = data.content
+          this.platformChooser.searchForm.totalPage = +data.totalPages
+        }
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    handlePlatformChooseSizeChange(val) {
+      this.platformChooser.searchForm.pageSize = val
+      this.loadPlatformChooserData()
+    },
+    handlePlatformChooseCurrentChange(val) {
+      this.platformChooser.searchForm.pageNumber = val
+      this.loadPlatformChooserData()
+    },
+    platformChooserSearch(val) {
+      this.platformChooser.searchForm.name = val[0].model
+      this.loadPlatformChooserData()
+    },
+    switchPlatformChooserVisible(val) {
+      this.platformChooser.visible = val
+    },
+    getPlatformChooserData(val) {
+      this.addUserDialogForm.platformId = val[0].idString
+      this.addUserDialogForm.platformName = val[0].name
+    },
+    // 平台选择器结束
+    // 公司选择器开始
+    showCompanyChooser() {
+      if (this.addUserDialogForm.platformId) {
+        this.companyChooser.visible = true
+        this.loadCompanyChooserData()
+      } else {
+        this.$message.error('请先选择平台')
+      }
+    },
+    loadCompanyChooserData() {
+      if (!this.addUserDialogForm.platformId) {
+        return
+      }
+      const params = {
+        platformId: this.addUserDialogForm.platformId,
+        companyName: this.companyChooser.searchForm.companyName,
+        pageNumber: this.companyChooser.searchForm.pageNumber,
+        pageSize: this.companyChooser.searchForm.pageSize
+      }
 
+      getCompany(params).then(response => {
+        const code = response.code
+        const data = response.data
+        if (code === '25200') {
+          this.companyChooser.data = data.content
+          this.companyChooser.searchForm.totalPage = +data.totalPages
+        }
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    handleCompanyChooseSizeChange(val) {
+      this.companyChooser.searchForm.pageSize = val
+      this.loadCompanyChooserData()
+    },
+    handleCompanyChooseCurrentChange(val) {
+      this.companyChooser.searchForm.pageNumber = val
+      this.loadCompanyChooserData()
+    },
+    companyChooserSearch(val) {
+      this.companyChooser.searchForm.companyName = val[0].model
+      this.loadCompanyChooserData()
+    },
+    switchCompanyChooserVisible(val) {
+      this.companyChooser.visible = val
+    },
+    getCompanyChooserData(val) {
+      this.addUserDialogForm.companyId = val[0].idString
+      this.addUserDialogForm.companyName = val[0].companyName
+    }
+    // 公司选择器结束
   }
 }
 

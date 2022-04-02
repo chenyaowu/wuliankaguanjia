@@ -1,31 +1,30 @@
 <template>
   <div class="app-container">
-    <el-form :inline="true" label-position="left" label-width="80px" :model="userConfigForm">
+    <el-form :inline="true" label-position="left" label-width="80px" :model="userConfigSearchForm">
       <el-row>
         <el-form-item label="用户名">
-          <el-input v-model="userConfigForm.userId" />
+          <el-input v-model="userConfigSearchForm.username" clearable />
         </el-form-item>
         <el-form-item label="配置项">
-          <el-input v-model="userConfigForm.name" />
+          <el-input v-model="userConfigSearchForm.name" clearable />
         </el-form-item>
         <el-form-item label="配置键">
-          <el-input v-model="userConfigForm.key" />
+          <el-input v-model="userConfigSearchForm.key" clearable />
         </el-form-item>
         <el-form-item label="配置值">
-          <el-input v-model="userConfigForm.value" />
+          <el-input v-model="userConfigSearchForm.value" clearable />
         </el-form-item>
       </el-row>
       <el-row>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search">查询</el-button>
-          <el-button type="success" icon="el-icon-edit" @click="addDialogFormVisible = true">添加</el-button>
-          <el-button type="danger" icon="el-icon-delete" @click="delMulData()">删除</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="loadData">查询</el-button>
+          <el-button type="danger" icon="el-icon-delete" @click="delUserConfig">删除</el-button>
         </el-form-item>
       </el-row>
     </el-form>
     <el-table
       ref="multipleTable"
-      :data="userTableData"
+      :data="userConfigTableData"
       tooltip-effect="dark"
       style="width: 100%"
       @selection-change="handleSelectionChange"
@@ -35,140 +34,395 @@
         width="55"
       />
       <el-table-column
-        prop="date"
-        label="日期"
-        width="180"
-      />
+        prop="username"
+        label="用户名"
+      >
+        <template slot-scope="scope">
+          <el-link type="primary" @click="doUserValue(scope.row)">{{ scope.row.username }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="name"
-        label="姓名"
-        width="180"
+        label="配置项"
+      >
+        <template slot-scope="scope">
+          <el-link type="primary" @click="doValue(scope.row)">{{ scope.row.name }}</el-link>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="key"
+        label="键（KEY）"
+      >
+        <template slot-scope="scope">
+          <el-link type="primary" @click="doEdit(scope.row)">{{ scope.row.key }}</el-link>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="value"
+        label="值（VALUE）"
+      >
+        <template slot-scope="scope">
+          <el-link type="primary" @click="doEdit(scope.row)">{{ scope.row.value }}</el-link>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="desc"
+        label="备注"
       />
       <el-table-column
-        prop="address"
-        label="地址"
+        prop="createdDate"
+        label="创建时间"
       />
+      <div slot="append">
+        <el-form ref="userConfigEditForm" :inline="true" :model="userConfigEditForm">
+          <el-row class="add-form-div">
+            <el-form-item class="add-form-item" prop="username">
+              <el-input v-model="userConfigEditForm.username" placeholder="用户名" disabled @click.native="userChooser.visible = true" />
+            </el-form-item>
+            <el-form-item class="add-form-item" prop="name">
+              <el-input v-model="userConfigEditForm.name" placeholder="配置项" />
+            </el-form-item>
+            <el-form-item class="add-form-item" prop="key">
+              <el-input v-model="userConfigEditForm.key" placeholder="配置键" />
+            </el-form-item>
+            <el-form-item class="add-form-item" prop="value">
+              <el-input v-model="userConfigEditForm.value" placeholder="配置值" />
+            </el-form-item>
+            <el-form-item class="add-form-item" prop="desc">
+              <el-input v-model="userConfigEditForm.desc" placeholder="备注" />
+            </el-form-item>
+            <el-form-item class="add-form-item">
+              <el-button type="success" icon="el-icon-edit" @click="addUserConfig">添加</el-button>
+              <el-button type="warning" icon="el-icon-delete" @click="updateUserConfig">更新</el-button>
+            </el-form-item>
+          </el-row>
+        </el-form>
+      </div>
     </el-table>
     <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="1000"
+      :current-page="userConfigSearchForm.pageNumber"
+      :page-sizes="[10, 15, 30, 50, 100, 200, 300, 400]"
+      :page-size="userConfigSearchForm.pageSize"
+      :total="userConfigSearchForm.totalPage"
+      layout="total, sizes, prev, pager, next, jumper"
+      next-text="下一页"
+      prev-text="上一页"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
     />
-    <el-dialog title="添加用户" :visible.sync="addDialogFormVisible" width="50%">
-      <el-form :model="addDialogForm">
-        <el-form-item label="平台" label-width="120px">
-          <el-input v-model="addDialogForm.platformId" disabled @click.native="platformChooserVisible = true" />
-        </el-form-item>
-        <el-form-item label="用户名" label-width="120px">
-          <el-input v-model="addDialogForm.username" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="密码" label-width="120px">
-          <el-input v-model="addDialogForm.password" autocomplete="off" />
-        </el-form-item>
-        <el-form-item label="用户类型" label-width="120px">
-          <el-select v-model="addDialogForm.type" placeholder="请选择用户类型">
-            <el-option label="系统用户" value="0" />
-            <el-option label="平台用户" value="1" />
-            <el-option label="客户用户" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="用户状态" label-width="120px">
-          <el-select v-model="addDialogForm.status" placeholder="请选择用户状态">
-            <el-option label="启用" value="1" />
-            <el-option label="禁用" value="0" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="addDialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogFormVisible = false">确 定</el-button>
-      </div>
-    </el-dialog>
-    <platform-chooser :parent-platform-chooser-visible="platformChooserVisible" @doClosePlatformChooser="test" />
+    <chooser
+      :title="userChooser.title"
+      :visible="userChooser.visible"
+      :data="userChooser.data"
+      :columns="userChooser.columns"
+      :search-items="userChooser.searchItems"
+      :current-page="userChooser.searchForm.pageNumber"
+      :page-size="userChooser.searchForm.pageSize"
+      :total="userChooser.searchForm.totalPage"
+      @handleSizeChange="handleUserChooseSizeChange"
+      @handleCurrentChange="handleUserChooseCurrentChange"
+      @close="switchUserChooserVisible"
+      @search="userChooserSearch"
+      @doSelect="getUserChooserData"
+    />
   </div>
 </template>
 
 <script>
-import PlatformChooser from '@/views/console/components/PlatformChooser'
+import Chooser from '@/components/Chooser'
+import { getUserConfig, saveUserConfig, updateUserConfig, delUserConfig } from '@/api/console/user-config'
+import { getUser } from '@/api/console/user'
+
 export default {
   name: 'ConsoleSystemUserConfigList',
   components: {
-    PlatformChooser
+    Chooser
   },
   data() {
     return {
       labelPosition: 'right',
-      addDialogFormVisible: false,
-      platformChooserVisible: false,
-      userConfigForm: {
+      userConfigSearchForm: {
         userId: '',
+        username: '',
         name: '',
         key: '',
-        value: ''
+        value: '',
+        pageNumber: 1,
+        pageSize: 10,
+        totalPage: 100
       },
-      addDialogForm: {
-        platformId: '',
+      userConfigEditForm: {
+        id: '',
+        userId: '',
         username: '',
-        password: '',
-        type: '',
-        status: ''
+        name: '',
+        key: '',
+        value: '',
+        desc: ''
       },
-      userTableData: [{
-        id: 1,
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        id: 2,
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        id: 3,
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        id: 4,
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
+      addDialogFormVisible: false,
+      userConfigTableData: [],
       multipleSelection: [],
-      size: ''
+      userChooser: {
+        title: '选择用户',
+        visible: false,
+        data: [],
+        columns: [
+          {
+            'number': 1,
+            'property': 'username',
+            'label': '用户名'
+          },
+          {
+            'number': 2,
+            'property': 'statusString',
+            'label': '状态'
+          },
+          {
+            'number': 3,
+            'property': 'desc',
+            'label': '备注'
+          }
+        ],
+        searchItems: [
+          {
+            'number': 1,
+            'model': '',
+            'label': '用户名'
+          }
+        ],
+        inputKey: '', // 控制选择器填入位置
+        searchForm: {
+          name: '',
+          pageNumber: 1,
+          pageSize: 5,
+          totalPage: 5
+        }
+      }
     }
   },
-  methods: {
-    delMulData() {
-      // 拿到选中的数据
-      const val = this.multipleSelection
-      // 如果选中数据存在
-      if (val) {
-        // 将选中数据遍历
-        val.forEach(val => {
-          // 遍历源数据
-          this.userTableData.forEach((v, i) => {
-            // 如果选中数据和源数据的某一条唯一标识符相等，删除对应的源数据
-            if (val.id === v.id) {
-              this.userTableData.splice(i, 1)
-            }
-          })
-        })
+  watch: {
+    userConfigSearchForm: function(newUserConfigSearchForm) {
+      if (newUserConfigSearchForm.username === '') {
+        this.userConfigSearchForm.userId = ''
       }
-      // 清除选中状态
-      this.$refs.multipleTable.clearSelection()
+    }
+  },
+  created() {
+    this.loadData()
+    this.loadUserChooserData()
+  },
+  methods: {
+    loadData() {
+      const params = {
+        userId: this.userConfigSearchForm.username === '' ? '' : this.userConfigSearchForm.userId,
+        name: this.userConfigSearchForm.name,
+        key: this.userConfigSearchForm.key,
+        value: this.userConfigSearchForm.value,
+        pageNumber: this.userConfigSearchForm.pageNumber,
+        pageSize: this.userConfigSearchForm.pageSize
+      }
+      getUserConfig(params).then(response => {
+        const code = response.code
+        const data = response.data
+        if (code === '25200') {
+          this.userConfigTableData = data.content
+          this.userConfigSearchForm.totalPage = +data.totalPages
+        }
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    doValue(val) {
+      this.userConfigSearchForm.name = val.name
+      this.loadData()
+    },
+    doEdit(val) {
+      this.userConfigEditForm.id = val.idString
+      this.userConfigEditForm.userId = val.userIdString
+      this.userConfigEditForm.username = val.username
+      this.userConfigEditForm.name = val.name
+      this.userConfigEditForm.key = val.key
+      this.userConfigEditForm.value = val.value
+      this.userConfigEditForm.desc = val.desc
+    },
+    doUserValue(val) {
+      this.userConfigSearchForm.userId = val.userIdString
+      this.userConfigSearchForm.username = val.username
+      this.loadData()
+    },
+    // 每页条数变化
+    handleSizeChange(val) {
+      this.userConfigSearchForm.pageSize = val
+      this.loadData()
+    },
+    // 当前页变化
+    handleCurrentChange(val) {
+      this.userConfigSearchForm.pageNumber = val
+      this.loadData()
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
-    test(val) {
-      this.platformChooserVisible = val
+    addUserConfig() {
+      const irender = {
+        '45010': '参数不合法！',
+        '45020': '名称不合法！',
+        '45030': '键不合法！',
+        '45040': '值不合法！',
+        '45050': '备注不合法！',
+        '45409': '相同键已经存在！',
+        '55010': '操作失败，请稍后尝试或联系客服！',
+        '55020': '操作失败，请稍后尝试或联系客服！'
+      }
+      const params = {
+        userId: this.userConfigEditForm.userId,
+        name: this.userConfigEditForm.name,
+        key: this.userConfigEditForm.key,
+        value: this.userConfigEditForm.value,
+        desc: this.userConfigEditForm.desc
+      }
+      saveUserConfig(params).then(response => {
+        const code = response.code
+        if (code !== '25200') {
+          this.$message.error(irender[code])
+          return
+        }
+        this.$refs['userConfigEditForm'].resetFields()
+        this.$message({
+          message: '保存成功！',
+          type: 'success'
+        })
+        this.loadData()
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    updateUserConfig() {
+      const irender = {
+        '45010': '参数不合法！',
+        '45020': '名称不合法！',
+        '45030': '键不合法！',
+        '45040': '值不合法！',
+        '45050': '备注不合法！',
+        '45404': '记录不存在！',
+        '55010': '操作失败，请稍后尝试或联系客服！',
+        '55020': '操作失败，请稍后尝试或联系客服！'
+      }
+      const params = {
+        userId: this.userConfigEditForm.userId,
+        name: this.userConfigEditForm.name,
+        key: this.userConfigEditForm.key,
+        value: this.userConfigEditForm.value,
+        desc: this.userConfigEditForm.desc
+      }
+      updateUserConfig(params).then(response => {
+        const code = response.code
+        if (code !== '25200') {
+          this.$message.error(irender[code])
+          return
+        }
+        this.$refs['userConfigEditForm'].resetFields()
+        this.$message({
+          message: '更新成功！',
+          type: 'success'
+        })
+        this.loadData()
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    delUserConfig() {
+      // 拿到选中的数据
+      const val = this.multipleSelection
+      if (val.length > 0) {
+        this.$confirm('确定要删除吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          const irender = {
+            '45010': '参数不合法！',
+            '55010': '操作失败，请稍后尝试或联系客服！',
+            '55020': '操作失败，请稍后尝试或联系客服！',
+            '55030': '操作失败，请稍后尝试或联系客服！'
+          }
+          // 将选中数据遍历
+          let ids = ''
+          val.forEach(val => { ids += val.idString + ',' })
+          delUserConfig({ 'ids': ids }).then(response => {
+            const code = response.code
+            if (code !== '25200') {
+              this.$message.error(irender[code])
+              return
+            }
+            this.$message({
+              message: '操作成功！',
+              type: 'success'
+            })
+            this.loadData()
+          }).catch(error => {
+            console.log(error)
+          })
+        }).catch(() => {})
+      } else {
+        this.$message({
+          message: '请选择一条记录',
+          type: 'warning'
+        })
+      }
+    },
+    // 用户选择器开始
+    loadUserChooserData() {
+      const params = {
+        username: this.userChooser.searchForm.name,
+        pageNumber: this.userChooser.searchForm.pageNumber,
+        pageSize: this.userChooser.searchForm.pageSize
+      }
+      getUser(params).then(response => {
+        const code = response.code
+        const data = response.data
+        if (code === '25200') {
+          this.userChooser.data = data.content
+          this.userChooser.searchForm.totalPage = +data.totalPages
+        }
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    handleUserChooseSizeChange(val) {
+      this.userChooser.searchForm.pageSize = val
+      this.loadUserChooserData()
+    },
+    handleUserChooseCurrentChange(val) {
+      this.userChooser.searchForm.pageNumber = val
+      this.loadUserChooserData()
+    },
+    userChooserSearch(val) {
+      this.userChooser.searchForm.name = val[0].model
+      this.loadUserChooserData()
+    },
+    switchUserChooserVisible(val) {
+      this.userChooser.visible = val
+    },
+    getUserChooserData(val) {
+      this.userConfigEditForm.userId = val[0].idString
+      this.userConfigEditForm.username = val[0].username
     }
+    // 用户选择器结束
   }
 }
 
 </script>
 
 <style scoped>
-
+  .add-form-div{
+    margin-left: 55px;
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+  }
+  .add-form-item{
+    flex: 1;
+  }
 </style>
