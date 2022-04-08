@@ -61,7 +61,7 @@ const actions = {
             code: 20000,
             data: {
               roles: ['admin'],
-              uris: ['console.page.user.list', 'console.page.user.config.list', 'console.page.uri.list', 'console.page.datadict.list', 'console.page.uri.group.list'],
+              uris: ['console.page.user.list', 'console.page.user.config.list', 'console.page.uri.list', 'console.page.datadict.list', 'console.page.uri.group.list', 'console.page.function.list'],
               userType: 0,
               introduction: 'I am a super administrator',
               avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',

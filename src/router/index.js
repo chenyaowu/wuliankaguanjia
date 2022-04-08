@@ -111,8 +111,14 @@ export const asyncRoutes = [
       {
         path: 'datadict/list',
         component: () => import('@/views/console/system/datadict/index'),
-        name: 'ConsoleSystemDatadictUriList',
+        name: 'ConsoleSystemDatadictList',
         meta: { title: '数据字典', icon: 'el-icon-collection', uri: 'console.page.datadict.list' }
+      },
+      {
+        path: 'function/list',
+        component: () => import('@/views/console/system/function/index'),
+        name: 'ConsoleSystemFunctionList',
+        meta: { title: '功能管理', icon: 'el-icon-s-grid', uri: 'console.page.function.list' }
       }
     ]
   },
