@@ -85,7 +85,7 @@
       :current-page="userSearchForm.pageNumber"
       :page-sizes="[10, 15, 30, 50, 100, 200, 300, 400]"
       :page-size="userSearchForm.pageSize"
-      :total="userSearchForm.totalPage"
+      :total="userSearchForm.totalElements"
       layout="total, sizes, prev, pager, next, jumper"
       next-text="下一页"
       prev-text="上一页"
@@ -151,7 +151,7 @@
       :search-items="platformChooser.searchItems"
       :current-page="platformChooser.searchForm.pageNumber"
       :page-size="platformChooser.searchForm.pageSize"
-      :total="platformChooser.searchForm.totalPage"
+      :total="platformChooser.searchForm.totalElements"
       @handleSizeChange="handlePlatformChooseSizeChange"
       @handleCurrentChange="handlePlatformChooseCurrentChange"
       @close="switchPlatformChooserVisible"
@@ -166,7 +166,7 @@
       :search-items="companyChooser.searchItems"
       :current-page="companyChooser.searchForm.pageNumber"
       :page-size="companyChooser.searchForm.pageSize"
-      :total="companyChooser.searchForm.totalPage"
+      :total="companyChooser.searchForm.totalElements"
       @handleSizeChange="handleCompanyChooseSizeChange"
       @handleCurrentChange="handleCompanyChooseCurrentChange"
       @close="switchCompanyChooserVisible"
@@ -220,7 +220,7 @@ export default {
         status: '',
         pageNumber: 1,
         pageSize: 10,
-        totalPage: 100
+        totalElements: 100
       },
       addUserDialogForm: {
         visible: false,
@@ -278,7 +278,7 @@ export default {
           name: '',
           pageNumber: 1,
           pageSize: 5,
-          totalPage: 5
+          totalElements: 5
         }
       },
       companyChooser: {
@@ -309,7 +309,7 @@ export default {
           companyName: '',
           pageNumber: 1,
           pageSize: 5,
-          totalPage: 5
+          totalElements: 5
         }
       }
     }
@@ -424,7 +424,7 @@ export default {
         const data = response.data
         if (code === '25200') {
           this.userTableData = data.content
-          this.userSearchForm.totalPage = +data.totalPages
+          this.userSearchForm.totalElements = +data.totalElements
         }
       }).catch(error => {
         console.log(error)
@@ -562,7 +562,7 @@ export default {
         const data = response.data
         if (code === '25200') {
           this.platformChooser.data = data.content
-          this.platformChooser.searchForm.totalPage = +data.totalPages
+          this.platformChooser.searchForm.totalElements = +data.totalElements
         }
       }).catch(error => {
         console.log(error)
@@ -613,7 +613,7 @@ export default {
         const data = response.data
         if (code === '25200') {
           this.companyChooser.data = data.content
-          this.companyChooser.searchForm.totalPage = +data.totalPages
+          this.companyChooser.searchForm.totalElements = +data.totalElements
         }
       }).catch(error => {
         console.log(error)

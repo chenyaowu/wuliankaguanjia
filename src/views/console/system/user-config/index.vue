@@ -103,7 +103,7 @@
       :current-page="userConfigSearchForm.pageNumber"
       :page-sizes="[10, 15, 30, 50, 100, 200, 300, 400]"
       :page-size="userConfigSearchForm.pageSize"
-      :total="userConfigSearchForm.totalPage"
+      :total="userConfigSearchForm.totalElements"
       layout="total, sizes, prev, pager, next, jumper"
       next-text="下一页"
       prev-text="上一页"
@@ -118,7 +118,7 @@
       :search-items="userChooser.searchItems"
       :current-page="userChooser.searchForm.pageNumber"
       :page-size="userChooser.searchForm.pageSize"
-      :total="userChooser.searchForm.totalPage"
+      :total="userChooser.searchForm.totalElements"
       @handleSizeChange="handleUserChooseSizeChange"
       @handleCurrentChange="handleUserChooseCurrentChange"
       @close="switchUserChooserVisible"
@@ -149,7 +149,7 @@ export default {
         value: '',
         pageNumber: 1,
         pageSize: 10,
-        totalPage: 100
+        totalElements: 100
       },
       userConfigEditForm: {
         id: '',
@@ -196,7 +196,7 @@ export default {
           name: '',
           pageNumber: 1,
           pageSize: 5,
-          totalPage: 5
+          totalElements: 5
         }
       }
     }
@@ -227,7 +227,7 @@ export default {
         const data = response.data
         if (code === '25200') {
           this.userConfigTableData = data.content
-          this.userConfigSearchForm.totalPage = +data.totalPages
+          this.userConfigSearchForm.totalElements = +data.totalElements
         }
       }).catch(error => {
         console.log(error)
@@ -384,7 +384,7 @@ export default {
         const data = response.data
         if (code === '25200') {
           this.userChooser.data = data.content
-          this.userChooser.searchForm.totalPage = +data.totalPages
+          this.userChooser.searchForm.totalElements = +data.totalElements
         }
       }).catch(error => {
         console.log(error)

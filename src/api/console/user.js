@@ -24,6 +24,7 @@ export function deleteUser(data) {
     params: data
   })
 }
+
 export function deleteUserAnyway(data) {
   return request({
     url: '/api/console/user/delete/anyway',

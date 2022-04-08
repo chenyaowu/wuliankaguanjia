@@ -94,7 +94,25 @@ export const asyncRoutes = [
         path: 'user/config/list',
         component: () => import('@/views/console/system/user-config/index'),
         name: 'ConsoleSystemUserConfigList',
-        meta: { title: '用户配置', icon: 'user', uri: 'console.page.user.config.list' }
+        meta: { title: '用户配置', icon: 'el-icon-setting', uri: 'console.page.user.config.list' }
+      },
+      {
+        path: 'uri/list',
+        component: () => import('@/views/console/system/uri/index'),
+        name: 'ConsoleSystemUserUriList',
+        meta: { title: '资源管理', icon: 'el-icon-folder', uri: 'console.page.uri.list' }
+      },
+      {
+        path: 'uri/group/list',
+        component: () => import('@/views/console/system/uri-group/index'),
+        name: 'ConsoleSystemUserUriGroupList',
+        meta: { title: '资源组管理', icon: 'el-icon-folder-opened', uri: 'console.page.uri.group.list' }
+      },
+      {
+        path: 'datadict/list',
+        component: () => import('@/views/console/system/datadict/index'),
+        name: 'ConsoleSystemDatadictUriList',
+        meta: { title: '数据字典', icon: 'el-icon-collection', uri: 'console.page.datadict.list' }
       }
     ]
   },
