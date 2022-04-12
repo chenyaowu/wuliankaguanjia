@@ -16,3 +16,15 @@ npm install --registry=https://registry.npm.taobao.org
 npm run dev
 
 浏览器访问 http://localhost:9527
+
+### 命名规范
+#### 变量命名
+1. 搜索表单以,模块名+SearchForm为对象。例如：按用户名搜索用户，命名为"userSearchForm.username"
+2. 添加表单以，模块名+AddForm为对象。例如：按用户名搜索用户，命名为"userAddForm.username"
+3. 编辑表单以，模块名+EditForm为对象。例如：按用户名搜索用户，命名为"userEditForm.username"
+4. table数据，模块名+TableData。例如：用户table，命名为"userTableData"
+#### 方法命名
+1. 搜索方法以，search+模块名+ListData。例如：搜索用户方法：searchUserListData
+2. 删除方法以，remove+模块名。例如：搜索用户方法：removeUser
+3. 打开对话框，show+功能+dialog。例如：打开添加用户对话框：showAddUserDialog
+4. 

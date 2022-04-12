@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getFunction(data) {
   return request({
-    url: '/api/console/function/search',
+    url: '/console/function/search',
     method: 'get',
     params: data
   })
@@ -10,7 +10,7 @@ export function getFunction(data) {
 
 export function saveFunction(data) {
   return request({
-    url: '/api/console/function/save',
+    url: '/console/function/save',
     method: 'post',
     params: data
   })
@@ -18,7 +18,7 @@ export function saveFunction(data) {
 
 export function deleteFunction(data) {
   return request({
-    url: '/api/console/function/delete',
+    url: '/console/function/delete',
     method: 'post',
     params: data
   })

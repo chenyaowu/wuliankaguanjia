@@ -355,3 +355,40 @@ export function removeClass(ele, cls) {
     ele.className = ele.className.replace(reg, ' ')
   }
 }
+
+/**
+ * VUE 错误提示
+ * @param {Object} that
+ * @param {Object} irender
+ * @param {String} code
+ */
+export function vrender(that, irender, code) {
+  that.$message.error(irender[code] + '\n错误代码：' + code)
+}
+
+export function removeById(that, multipleSelection, irender, method, callBack) {
+  if (multipleSelection.length > 0) {
+    that.$confirm('确定要删除吗?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      // 将选中数据遍历
+      let ids = ''
+      multipleSelection.forEach(val => { ids += val.idString + ',' })
+      method({ 'ids': ids }).then(response => {
+        const code = response.code
+        if (code !== '25200') {
+          vrender(that, irender, code)
+          return
+        }
+        that.$message({ message: '操作成功！', type: 'success' })
+        callBack()
+      }).catch(error => {
+        console.log(error)
+      })
+    }).catch(() => {})
+  } else {
+    that.$message({ message: '请选择一条记录', type: 'warning' })
+  }
+}

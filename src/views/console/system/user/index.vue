@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
-    <el-form :inline="true" label-position="left" label-width="80px" :model="userSearchForm">
+    <el-form ref="userSearchForm" :inline="true" label-position="left" label-width="80px" :model="userSearchForm">
       <el-row>
-        <el-form-item label="用户名">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="userSearchForm.username" />
         </el-form-item>
-        <el-form-item label="用户类型">
+        <el-form-item label="用户类型" prop="type">
           <el-select v-model="userSearchForm.type" placeholder="用户类型">
             <el-option label="-" value="" />
             <el-option label="系统用户" value="0" />
@@ -13,29 +13,32 @@
             <el-option label="客户用户" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="用户状态">
+        <el-form-item label="用户状态" prop="status">
           <el-select v-model="userSearchForm.status" placeholder="用户状态">
             <el-option label="-" value="" />
             <el-option label="禁用" value="0" />
             <el-option label="启用" value="1" />
           </el-select>
         </el-form-item>
+        <el-form-item>
+          <el-button @click="resetForm('userSearchForm')">重置</el-button>
+        </el-form-item>
+
       </el-row>
       <el-row>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="loadData">查询</el-button>
-          <el-button type="success" icon="el-icon-edit" @click="addUserDialogForm.visible = true">添加</el-button>
-          <el-button type="danger" icon="el-icon-delete" @click="delUser()">删除</el-button>
-          <el-button type="danger" icon="el-icon-delete" @click="delUserAnyway()">强制删除</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="searchUserListData">查询</el-button>
+          <el-button type="success" icon="el-icon-edit" @click="addUserForm.visible = true">添加</el-button>
+          <el-button type="danger" icon="el-icon-delete" @click="removeUser()">删除</el-button>
+          <el-button type="danger" icon="el-icon-delete" @click="forceRemoveUser()">强制删除</el-button>
         </el-form-item>
       </el-row>
     </el-form>
     <el-table
-      ref="multipleTable"
       :data="userTableData"
       tooltip-effect="dark"
       style="width: 100%"
-      @selection-change="handleSelectionChange"
+      @selection-change="handleUserTableSelectionChange"
     >
       <el-table-column
         type="selection"
@@ -89,43 +92,43 @@
       layout="total, sizes, prev, pager, next, jumper"
       next-text="下一页"
       prev-text="上一页"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
+      @size-change="handleUserTableSizeChange"
+      @current-change="handleUserTableCurrentChange"
     />
-    <el-dialog title="添加用户" :visible.sync="addUserDialogForm.visible" width="50%">
-      <el-form ref="addUserDialogForm" :model="addUserDialogForm" :rules="addUserRules">
+    <el-dialog title="添加用户" :visible.sync="addUserForm.visible" width="50%">
+      <el-form ref="addUserForm" :model="addUserForm" :rules="addUserRules">
         <el-form-item label="用户类型" label-width="120px" prop="type">
-          <el-select ref="type" v-model="addUserDialogForm.type" placeholder="请选择用户类型" @change="addUserDialogFormTypeChange">
+          <el-select ref="type" v-model="addUserForm.type" placeholder="请选择用户类型" @change="addUserFormTypeChange">
             <el-option label="系统用户" value="0" />
             <el-option label="平台用户" value="1" />
             <el-option label="客户用户" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item v-show="addUserDialogForm.showPlatform" label="平台" label-width="120px" prop="platformName">
-          <el-input ref="platformName" v-model="addUserDialogForm.platformName" disabled @click.native="platformChooser.visible = true" />
+        <el-form-item v-show="addUserForm.showPlatform" label="平台" label-width="120px" prop="platformName">
+          <el-input ref="platformName" v-model="addUserForm.platformName" disabled @click.native="platformChooser.visible = true" />
         </el-form-item>
-        <el-form-item v-show="addUserDialogForm.showCompany" label="公司" label-width="120px" prop="companyName">
-          <el-input ref="companyName" v-model="addUserDialogForm.companyName" disabled @click.native="showCompanyChooser" />
+        <el-form-item v-show="addUserForm.showCompany" label="公司" label-width="120px" prop="companyName">
+          <el-input ref="companyName" v-model="addUserForm.companyName" disabled @click.native="showCompanyChooser" />
         </el-form-item>
         <el-form-item label="用户名" label-width="120px" prop="username">
-          <el-input v-model.trim="addUserDialogForm.username" placeholder="请输入用户名" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUserForm.username" placeholder="请输入用户名" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="密码" label-width="120px" prop="password">
-          <el-input v-model.trim="addUserDialogForm.password" placeholder="请输入密码" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUserForm.password" placeholder="请输入密码" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="用户状态" label-width="120px" prop="status">
-          <el-select ref="status" v-model="addUserDialogForm.status" placeholder="请选择用户状态">
+          <el-select ref="status" v-model="addUserForm.status" placeholder="请选择用户状态">
             <el-option label="启用" value="1" />
             <el-option label="禁用" value="0" />
           </el-select>
         </el-form-item>
         <el-form-item label="备注" label-width="120px" prop="desc">
-          <el-input v-model.trim="addUserDialogForm.desc" type="textarea" />
+          <el-input v-model.trim="addUserForm.desc" type="textarea" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="addUserDialogForm.visible = false">取 消</el-button>
-        <el-button type="primary" @click="doSaveAddUserDialog">确 定</el-button>
+        <el-button @click="addUserForm.visible = false">取 消</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
       </div>
     </el-dialog>
     <el-dialog
@@ -178,10 +181,11 @@
 
 <script>
 import Chooser from '@/components/Chooser'
-import { getUser, saveUser, deleteUser, deleteUserAnyway, resetPassword, switchUserStatus } from '@/api/console/user'
+import { getUser, saveUser, deleteUser, forceRemoveUser, resetPassword, switchUserStatus } from '@/api/console/user'
 import { getPlatform } from '@/api/console/platform'
 import { getCompany } from '@/api/console/company'
 import { isLength } from '@/utils/validate'
+import { vrender, removeById } from '@/utils'
 export default {
   name: 'ConsoleSystemUserList',
   components: {
@@ -220,9 +224,9 @@ export default {
         status: '',
         pageNumber: 1,
         pageSize: 10,
-        totalElements: 100
+        totalElements: 1
       },
-      addUserDialogForm: {
+      addUserForm: {
         visible: false,
         platformId: '',
         platformName: '',
@@ -243,8 +247,7 @@ export default {
         status: { required: true, trigger: 'blur', message: '请选择用户状态' }
       },
       userTableData: [],
-      multipleSelection: [],
-      size: '',
+      userTableMultipleSelection: [],
       platformChooser: {
         title: '选择平台',
         visible: false,
@@ -278,7 +281,7 @@ export default {
           name: '',
           pageNumber: 1,
           pageSize: 5,
-          totalElements: 5
+          totalElements: 1
         }
       },
       companyChooser: {
@@ -309,109 +312,50 @@ export default {
           companyName: '',
           pageNumber: 1,
           pageSize: 5,
-          totalElements: 5
+          totalElements: 1
         }
       }
     }
   },
   created() {
-    this.loadData()
-    this.loadPlatformChooserData()
-    this.loadCompanyChooserData()
+    this.searchUserListData()
+    this.searchPlatformChooserListData()
+    this.searchCompanyChooserListData()
   },
   methods: {
-    delUser() {
+    removeUser() {
       // 拿到选中的数据
-      const val = this.multipleSelection
-      if (val.length > 0) {
-        this.$confirm('确定要删除吗?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          // 如果选中数据存在
-          const irender = {
-            '45010': '参数不合法！',
-            '45020': '存在admin用户不可删除！',
-            '45030': '不可以删除自己！',
-            '45040': '存在公司管理员，请使用强制删除！',
-            '55010': '操作失败，请稍后尝试或联系客服！',
-            '55020': '操作失败，请稍后尝试或联系客服！',
-            '55030': '操作失败，请稍后尝试或联系客服！'
-          }
-          // 将选中数据遍历
-          let ids = ''
-          val.forEach(val => { ids += val.idString + ',' })
-          deleteUser({ 'ids': ids }).then(response => {
-            const code = response.code
-            if (code !== '25200') {
-              this.$message.error(irender[code])
-              return
-            }
-            this.$message({
-              message: '操作成功！',
-              type: 'success'
-            })
-            this.loadData()
-          }).catch(error => {
-            console.log(error)
-          })
-        }).catch(() => {})
-      } else {
-        this.$message({
-          message: '请选择一条记录',
-          type: 'warning'
-        })
+      const val = this.userTableMultipleSelection
+      const irender = {
+        '45010': '参数不合法！',
+        '45020': '存在admin用户不可删除！',
+        '45030': '不可以删除自己！',
+        '45040': '存在公司管理员，请使用强制删除！',
+        '55010': '操作失败，请稍后尝试或联系客服！',
+        '55020': '操作失败，请稍后尝试或联系客服！',
+        '55030': '操作失败，请稍后尝试或联系客服！'
       }
+      removeById(this, val, irender, deleteUser, this.searchUserListData)
     },
-    delUserAnyway() {
+    forceRemoveUser() {
       // 拿到选中的数据
-      const val = this.multipleSelection
-      if (val.length > 0) {
-        this.$confirm('确定要删除吗?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          const irender = {
-            '45010': '参数不合法！',
-            '45020': '存在admin用户不可删除！',
-            '45030': '不可以删除自己！',
-            '45040': '存在公司管理员，请使用强制删除！',
-            '55010': '操作失败，请稍后尝试或联系客服！',
-            '55020': '操作失败，请稍后尝试或联系客服！',
-            '55030': '操作失败，请稍后尝试或联系客服！',
-            '55040': '操作失败，请稍后尝试或联系客服！',
-            '55050': '操作失败，请稍后尝试或联系客服！',
-            '55060': '操作失败，请稍后尝试或联系客服！',
-            '55070': '操作失败，请稍后尝试或联系客服！'
-          }
-          // 将选中数据遍历
-          let ids = ''
-          val.forEach(val => { ids += val.idString + ',' })
-          deleteUserAnyway({ 'ids': ids }).then(response => {
-            const code = response.code
-            if (code !== '25200') {
-              this.$message.error(irender[code])
-              return
-            }
-            this.$message({
-              message: '操作成功！',
-              type: 'success'
-            })
-            this.loadData()
-          }).catch(error => {
-            console.log(error)
-          })
-        }).catch(() => {})
-      } else {
-        this.$message({
-          message: '请选择一条记录',
-          type: 'warning'
-        })
+      const val = this.userTableMultipleSelection
+      const irender = {
+        '45010': '参数不合法！',
+        '45020': '存在admin用户不可删除！',
+        '45030': '不可以删除自己！',
+        '45040': '存在公司管理员，请使用强制删除！',
+        '55010': '操作失败，请稍后尝试或联系客服！',
+        '55020': '操作失败，请稍后尝试或联系客服！',
+        '55030': '操作失败，请稍后尝试或联系客服！',
+        '55040': '操作失败，请稍后尝试或联系客服！',
+        '55050': '操作失败，请稍后尝试或联系客服！',
+        '55060': '操作失败，请稍后尝试或联系客服！',
+        '55070': '操作失败，请稍后尝试或联系客服！'
       }
+      removeById(this, val, irender, forceRemoveUser, this.searchUserListData)
     },
-    loadData() {
+    searchUserListData() {
       const params = {
         username: this.userSearchForm.username,
         type: this.userSearchForm.type,
@@ -430,57 +374,55 @@ export default {
         console.log(error)
       })
     },
-    handleSelectionChange(val) {
-      this.multipleSelection = val
+    handleUserTableSelectionChange(val) {
+      this.userTableMultipleSelection = val
     },
     // 每页条数变化
-    handleSizeChange(val) {
+    handleUserTableSizeChange(val) {
       this.userSearchForm.pageSize = val
-      this.loadData()
+      this.searchUserListData()
     },
     // 当前页变化
-    handleCurrentChange(val) {
+    handleUserTableCurrentChange(val) {
       this.userSearchForm.pageNumber = val
-      this.loadData()
+      this.searchUserListData()
     },
-    doSaveAddUserDialog() {
-      this.$refs.addUserDialogForm.validate(valid => {
-        const irender = {
-          '45010': '类型不合法！',
-          '45020': '用户名不合法！',
-          '45030': '密码不合法！',
-          '45040': '平台不合法！',
-          '45050': '公司不合法！',
-          '45060': '状态不合法！',
-          '45070': '备注不合法！',
-          '45409': '用户已经存在！',
-          '55010': '操作失败，请稍后尝试或联系客服！',
-          '55020': '操作失败，请稍后尝试或联系客服！'
-        }
+    // 添加用户
+    addUser() {
+      this.$refs.addUserForm.validate(valid => {
         if (valid) {
           this.loading = true
+          const irender = {
+            '45010': '类型不合法！',
+            '45020': '用户名不合法！',
+            '45030': '密码不合法！',
+            '45040': '平台不合法！',
+            '45050': '公司不合法！',
+            '45060': '状态不合法！',
+            '45070': '备注不合法！',
+            '45409': '用户已经存在！',
+            '55010': '操作失败，请稍后尝试或联系客服！',
+            '55020': '操作失败，请稍后尝试或联系客服！'
+          }
           const params = {
-            'platformId': this.addUserDialogForm.platformId,
-            'companyId': this.addUserDialogForm.companyId,
-            'username': this.addUserDialogForm.username,
-            'password': this.addUserDialogForm.password,
-            'type': this.addUserDialogForm.type,
-            'status': this.addUserDialogForm.status,
-            'desc': this.addUserDialogForm.desc
+            'platformId': this.addUserForm.platformId,
+            'companyId': this.addUserForm.companyId,
+            'username': this.addUserForm.username,
+            'password': this.addUserForm.password,
+            'type': this.addUserForm.type,
+            'status': this.addUserForm.status,
+            'desc': this.addUserForm.desc
           }
           saveUser(params).then(response => {
             const code = response.code
             if (code !== '25200') {
-              this.$message.error(irender[code])
+              vrender(this, irender, code)
               return
             }
-            this.$refs['addUserDialogForm'].resetFields()
-            this.addUserDialogForm.visible = false
-            this.$message({
-              message: '保存成功！',
-              type: 'success'
-            })
-            this.loadData()
+            this.resetForm('addUserForm')
+            this.addUserForm.visible = false
+            this.$message({ message: '保存成功！', type: 'success' })
+            this.searchUserListData()
           }).catch(error => {
             console.log(error)
           })
@@ -491,10 +433,11 @@ export default {
       })
     },
     // 用户类型变化
-    addUserDialogFormTypeChange() {
-      this.addUserDialogForm.showPlatform = this.addUserDialogForm.type > 0
-      this.addUserDialogForm.showCompany = this.addUserDialogForm.type > 1
+    addUserFormTypeChange() {
+      this.addUserForm.showPlatform = this.addUserForm.type > 0
+      this.addUserForm.showCompany = this.addUserForm.type > 1
     },
+    // 切换用户状态
     switchUserStatus(val) {
       this.$confirm('确定要' + (val.status === '1' ? '禁用' : '启用') + '吗?', '提示', {
         confirmButtonText: '确定',
@@ -517,7 +460,7 @@ export default {
             message: '操作成功！',
             type: 'success'
           })
-          this.loadData()
+          this.searchUserListData()
         }).catch(error => {
           console.log(error)
         })
@@ -538,7 +481,7 @@ export default {
       resetPassword({ 'id': this.resetPasswordId, 'password': this.newPassword }).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
         this.$message({
@@ -550,8 +493,11 @@ export default {
         this.newPassword = ''
       }).catch(() => {})
     },
+    resetForm(formName) {
+      this.$refs[formName].resetFields()
+    },
     // 平台选择器开始
-    loadPlatformChooserData() {
+    searchPlatformChooserListData() {
       const params = {
         name: this.platformChooser.searchForm.name,
         pageNumber: this.platformChooser.searchForm.pageNumber,
@@ -570,39 +516,39 @@ export default {
     },
     handlePlatformChooseSizeChange(val) {
       this.platformChooser.searchForm.pageSize = val
-      this.loadPlatformChooserData()
+      this.searchPlatformChooserListData()
     },
     handlePlatformChooseCurrentChange(val) {
       this.platformChooser.searchForm.pageNumber = val
-      this.loadPlatformChooserData()
+      this.searchPlatformChooserListData()
     },
     platformChooserSearch(val) {
       this.platformChooser.searchForm.name = val[0].model
-      this.loadPlatformChooserData()
+      this.searchPlatformChooserListData()
     },
     switchPlatformChooserVisible(val) {
       this.platformChooser.visible = val
     },
     getPlatformChooserData(val) {
-      this.addUserDialogForm.platformId = val[0].idString
-      this.addUserDialogForm.platformName = val[0].name
+      this.addUserForm.platformId = val[0].idString
+      this.addUserForm.platformName = val[0].name
     },
     // 平台选择器结束
     // 公司选择器开始
     showCompanyChooser() {
-      if (this.addUserDialogForm.platformId) {
+      if (this.addUserForm.platformId) {
         this.companyChooser.visible = true
-        this.loadCompanyChooserData()
+        this.searchCompanyChooserListData()
       } else {
         this.$message.error('请先选择平台')
       }
     },
-    loadCompanyChooserData() {
-      if (!this.addUserDialogForm.platformId) {
+    searchCompanyChooserListData() {
+      if (!this.addUserForm.platformId) {
         return
       }
       const params = {
-        platformId: this.addUserDialogForm.platformId,
+        platformId: this.addUserForm.platformId,
         companyName: this.companyChooser.searchForm.companyName,
         pageNumber: this.companyChooser.searchForm.pageNumber,
         pageSize: this.companyChooser.searchForm.pageSize
@@ -621,22 +567,22 @@ export default {
     },
     handleCompanyChooseSizeChange(val) {
       this.companyChooser.searchForm.pageSize = val
-      this.loadCompanyChooserData()
+      this.searchCompanyChooserListData()
     },
     handleCompanyChooseCurrentChange(val) {
       this.companyChooser.searchForm.pageNumber = val
-      this.loadCompanyChooserData()
+      this.searchCompanyChooserListData()
     },
     companyChooserSearch(val) {
       this.companyChooser.searchForm.companyName = val[0].model
-      this.loadCompanyChooserData()
+      this.searchCompanyChooserListData()
     },
     switchCompanyChooserVisible(val) {
       this.companyChooser.visible = val
     },
     getCompanyChooserData(val) {
-      this.addUserDialogForm.companyId = val[0].idString
-      this.addUserDialogForm.companyName = val[0].companyName
+      this.addUserForm.companyId = val[0].idString
+      this.addUserForm.companyName = val[0].companyName
     }
     // 公司选择器结束
   }

@@ -35,40 +35,40 @@
       </span>
     </el-tree>
 
-    <el-dialog title="添加字典" :visible.sync="addUriDialogForm.visible" width="50%">
-      <el-form ref="addUriDialogForm" :model="addUriDialogForm">
+    <el-dialog title="添加字典" :visible.sync="addUriForm.visible" width="50%">
+      <el-form ref="addUriDialogForm" :model="addUriForm">
         <el-form-item label="配置项" label-width="120px" prop="name">
-          <el-input v-model.trim="addUriDialogForm.name" placeholder="请输入配置项" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUriForm.name" placeholder="请输入配置项" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="键(KEY)" label-width="120px" prop="key">
-          <el-input v-model.trim="addUriDialogForm.key" placeholder="请输入键(KEY)" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUriForm.key" placeholder="请输入键(KEY)" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="值(VALUE)" label-width="120px" prop="value">
-          <el-input v-model.trim="addUriDialogForm.value" placeholder="请输入值(VALUE)" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUriForm.value" placeholder="请输入值(VALUE)" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="备注" label-width="120px" prop="desc">
-          <el-input v-model.trim="addUriDialogForm.desc" type="textarea" />
+          <el-input v-model.trim="addUriForm.desc" type="textarea" />
         </el-form-item>
       </el-form>
-      <el-button @click="addUriDialogForm.visible = false">取 消</el-button>
+      <el-button @click="addUriForm.visible = false">取 消</el-button>
       <el-button type="primary" @click="doAddUri">确 定</el-button>
     </el-dialog>
-    <el-dialog title="编辑资源" :visible.sync="editUriDialogForm.visible" width="50%">
-      <el-form ref="editUriDialogForm" :model="editUriDialogForm">
+    <el-dialog title="编辑资源" :visible.sync="editUriForm.visible" width="50%">
+      <el-form ref="editUriDialogForm" :model="editUriForm">
         <el-form-item label="配置项" label-width="80px" prop="name">
-          <el-input v-model.trim="editUriDialogForm.name" placeholder="请输入名称" type="text" autocomplete="off" />
+          <el-input v-model.trim="editUriForm.name" placeholder="请输入名称" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="键(KEY)" label-width="80px" prop="key">
-          <el-input v-model.trim="editUriDialogForm.key" placeholder="请输入键(KEY)" type="text" autocomplete="off" />
+          <el-input v-model.trim="editUriForm.key" placeholder="请输入键(KEY)" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="值(VALUE)" label-width="80px" prop="value">
-          <el-input v-model.trim="editUriDialogForm.value" placeholder="请输入值(VALUE)" type="text" autocomplete="off" />
+          <el-input v-model.trim="editUriForm.value" placeholder="请输入值(VALUE)" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="备注" label-width="80px" prop="desc">
-          <el-input v-model.trim="editUriDialogForm.desc" type="textarea" />
+          <el-input v-model.trim="editUriForm.desc" type="textarea" />
         </el-form-item>
       </el-form>
-      <el-button @click="editUriDialogForm.visible = false">取 消</el-button>
+      <el-button @click="editUriForm.visible = false">取 消</el-button>
       <el-button type="primary" @click="doEditUri">确 定</el-button>
     </el-dialog>
   </div>
@@ -76,11 +76,12 @@
 
 <script>
 import { getDatadict, saveDatadict, updateDatadict, deleteDatadict } from '@/api/console/datadict'
+import { vrender } from '@/utils'
 export default {
   name: 'ConsoleSystemUriList',
   data() {
     return {
-      addUriDialogForm: {
+      addUriForm: {
         visible: false,
         key: '',
         name: '',
@@ -89,7 +90,7 @@ export default {
         nodeData: Object,
         node: Object
       },
-      editUriDialogForm: {
+      editUriForm: {
         visible: false,
         id: '',
         pid: '',
@@ -124,7 +125,7 @@ export default {
         const code = response.code
         const data = response.data
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
         return resolve(data)
@@ -133,9 +134,9 @@ export default {
       })
     },
     append(node, data) {
-      this.addUriDialogForm.visible = true
-      this.addUriDialogForm.nodeData = data
-      this.addUriDialogForm.node = node
+      this.addUriForm.visible = true
+      this.addUriForm.nodeData = data
+      this.addUriForm.node = node
     },
     remove(node, data) {
       this.$confirm('确定要删除吗?', '提示', {
@@ -150,7 +151,7 @@ export default {
         deleteDatadict({ 'ids': data.id }).then(response => {
           const code = response.code
           if (code !== '25200') {
-            this.$message.error(irender[code])
+            vrender(this, irender, code)
             return
           }
           this.$message({
@@ -174,26 +175,26 @@ export default {
         '55020': '操作失败，请稍后尝试或联系客服！'
       }
       const params = {
-        'pid': this.addUriDialogForm.nodeData.id,
-        'name': this.addUriDialogForm.name,
-        'key': this.addUriDialogForm.key,
-        'value': this.addUriDialogForm.value,
-        'desc': this.addUriDialogForm.desc
+        'pid': this.addUriForm.nodeData.id,
+        'name': this.addUriForm.name,
+        'key': this.addUriForm.key,
+        'value': this.addUriForm.value,
+        'desc': this.addUriForm.desc
       }
       saveDatadict(params).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
-        this.addUriDialogForm.visible = false
+        this.addUriForm.visible = false
         this.$message({
           message: '保存成功！',
           type: 'success'
         })
 
-        if (this.addUriDialogForm.node.childNodes.length > 0) {
-          this.appendNewNode(this.addUriDialogForm.value)
+        if (this.addUriForm.node.childNodes.length > 0) {
+          this.appendNewNode(this.addUriForm.value)
         }
         this.$refs['addUriDialogForm'].resetFields()
       }).catch(error => {
@@ -208,23 +209,23 @@ export default {
         const code = response.code
         const data = response.data
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
-        this.$refs.uriTree.append(data[0], this.addUriDialogForm.nodeData)
+        this.$refs.uriTree.append(data[0], this.addUriForm.nodeData)
       }).catch(error => {
         console.log(error)
       })
     },
     edit(node, data) {
-      this.editUriDialogForm.visible = true
-      this.editUriDialogForm.id = data.id
-      this.editUriDialogForm.name = data.name
-      this.editUriDialogForm.key = data.key
-      this.editUriDialogForm.value = data.value
-      this.editUriDialogForm.pid = data.pid
-      this.editUriDialogForm.desc = data.desc
-      this.editUriDialogForm.nodeData = node
+      this.editUriForm.visible = true
+      this.editUriForm.id = data.id
+      this.editUriForm.name = data.name
+      this.editUriForm.key = data.key
+      this.editUriForm.value = data.value
+      this.editUriForm.pid = data.pid
+      this.editUriForm.desc = data.desc
+      this.editUriForm.nodeData = node
     },
     doEditUri() {
       const irender = {
@@ -239,29 +240,29 @@ export default {
         '55030': '操作失败，请稍后尝试或联系客服！'
       }
       const params = {
-        'id': this.editUriDialogForm.id,
-        'pid': this.editUriDialogForm.pid,
-        'name': this.editUriDialogForm.name,
-        'key': this.editUriDialogForm.key,
-        'value': this.editUriDialogForm.value,
-        'desc': this.editUriDialogForm.desc
+        'id': this.editUriForm.id,
+        'pid': this.editUriForm.pid,
+        'name': this.editUriForm.name,
+        'key': this.editUriForm.key,
+        'value': this.editUriForm.value,
+        'desc': this.editUriForm.desc
       }
       updateDatadict(params).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
-        this.addUriDialogForm.visible = false
+        this.addUriForm.visible = false
         this.$message({
           message: '保存成功！',
           type: 'success'
         })
-        this.editUriDialogForm.nodeData.data.value = this.editUriDialogForm.value
-        this.editUriDialogForm.nodeData.data.name = this.editUriDialogForm.name
-        this.editUriDialogForm.nodeData.data.key = this.editUriDialogForm.key
-        this.editUriDialogForm.nodeData.data.desc = this.editUriDialogForm.desc
-        this.editUriDialogForm.visible = false
+        this.editUriForm.nodeData.data.value = this.editUriForm.value
+        this.editUriForm.nodeData.data.name = this.editUriForm.name
+        this.editUriForm.nodeData.data.key = this.editUriForm.key
+        this.editUriForm.nodeData.data.desc = this.editUriForm.desc
+        this.editUriForm.visible = false
         this.$refs['editUriDialogForm'].resetFields()
       }).catch(error => {
         console.log(error)

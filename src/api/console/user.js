@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 获取用户列表
 export function getUser(data) {
   return request({
-    url: '/api/console/user/search',
+    url: '/console/user/search',
     method: 'get',
     params: data
   })
@@ -11,7 +11,7 @@ export function getUser(data) {
 
 export function saveUser(data) {
   return request({
-    url: '/api/console/user/save',
+    url: '/console/user/save',
     method: 'post',
     params: data
   })
@@ -19,15 +19,15 @@ export function saveUser(data) {
 
 export function deleteUser(data) {
   return request({
-    url: '/api/console/user/delete',
+    url: '/console/user/delete',
     method: 'post',
     params: data
   })
 }
 
-export function deleteUserAnyway(data) {
+export function forceRemoveUser(data) {
   return request({
-    url: '/api/console/user/delete/anyway',
+    url: '/console/user/delete/anyway',
     method: 'post',
     params: data
   })
@@ -35,7 +35,7 @@ export function deleteUserAnyway(data) {
 
 export function resetPassword(data) {
   return request({
-    url: '/api/console/user/reset/password',
+    url: '/console/user/reset/password',
     method: 'post',
     params: data
   })
@@ -43,7 +43,7 @@ export function resetPassword(data) {
 
 export function switchUserStatus(data) {
   return request({
-    url: '/api/console/user/switch/status',
+    url: '/console/user/switch/status',
     method: 'post',
     params: data
   })

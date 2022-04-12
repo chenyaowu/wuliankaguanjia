@@ -1,33 +1,35 @@
 <template>
   <div class="app-container">
-    <el-form :inline="true" label-position="left" label-width="80px" :model="userConfigSearchForm">
+    <el-form ref="userConfigSearchForm" :inline="true" label-position="left" label-width="80px" :model="userConfigSearchForm">
       <el-row>
-        <el-form-item label="用户名">
-          <el-input v-model="userConfigSearchForm.username" clearable />
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="userConfigSearchForm.username" />
         </el-form-item>
-        <el-form-item label="配置项">
-          <el-input v-model="userConfigSearchForm.name" clearable />
+        <el-form-item label="配置项" prop="name">
+          <el-input v-model="userConfigSearchForm.name" />
         </el-form-item>
-        <el-form-item label="配置键">
-          <el-input v-model="userConfigSearchForm.key" clearable />
+        <el-form-item label="配置键" prop="key">
+          <el-input v-model="userConfigSearchForm.key" />
         </el-form-item>
-        <el-form-item label="配置值">
-          <el-input v-model="userConfigSearchForm.value" clearable />
+        <el-form-item label="配置值" prop="value">
+          <el-input v-model="userConfigSearchForm.value" />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="resetForm('userConfigSearchForm')">重置</el-button>
         </el-form-item>
       </el-row>
       <el-row>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="loadData">查询</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="searchUserConfigListData">查询</el-button>
           <el-button type="danger" icon="el-icon-delete" @click="delUserConfig">删除</el-button>
         </el-form-item>
       </el-row>
     </el-form>
     <el-table
-      ref="multipleTable"
       :data="userConfigTableData"
       tooltip-effect="dark"
       style="width: 100%"
-      @selection-change="handleSelectionChange"
+      @selection-change="handleUserConfigSelectionChange"
     >
       <el-table-column
         type="selection"
@@ -107,8 +109,8 @@
       layout="total, sizes, prev, pager, next, jumper"
       next-text="下一页"
       prev-text="上一页"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
+      @size-change="handleUserConfigSizeChange"
+      @current-change="handleUserConfigCurrentChange"
     />
     <chooser
       :title="userChooser.title"
@@ -132,6 +134,7 @@
 import Chooser from '@/components/Chooser'
 import { getUserConfig, saveUserConfig, updateUserConfig, delUserConfig } from '@/api/console/user-config'
 import { getUser } from '@/api/console/user'
+import { removeById, vrender } from '@/utils'
 
 export default {
   name: 'ConsoleSystemUserConfigList',
@@ -140,7 +143,6 @@ export default {
   },
   data() {
     return {
-      labelPosition: 'right',
       userConfigSearchForm: {
         userId: '',
         username: '',
@@ -149,7 +151,7 @@ export default {
         value: '',
         pageNumber: 1,
         pageSize: 10,
-        totalElements: 100
+        totalElements: 1
       },
       userConfigEditForm: {
         id: '',
@@ -160,9 +162,8 @@ export default {
         value: '',
         desc: ''
       },
-      addDialogFormVisible: false,
       userConfigTableData: [],
-      multipleSelection: [],
+      userConfigMultipleSelection: [],
       userChooser: {
         title: '选择用户',
         visible: false,
@@ -209,11 +210,11 @@ export default {
     }
   },
   created() {
-    this.loadData()
-    this.loadUserChooserData()
+    this.searchUserConfigListData()
+    this.searchUserChooserListData()
   },
   methods: {
-    loadData() {
+    searchUserConfigListData() {
       const params = {
         userId: this.userConfigSearchForm.username === '' ? '' : this.userConfigSearchForm.userId,
         name: this.userConfigSearchForm.name,
@@ -235,7 +236,7 @@ export default {
     },
     doValue(val) {
       this.userConfigSearchForm.name = val.name
-      this.loadData()
+      this.searchUserConfigListData()
     },
     doEdit(val) {
       this.userConfigEditForm.id = val.idString
@@ -249,20 +250,20 @@ export default {
     doUserValue(val) {
       this.userConfigSearchForm.userId = val.userIdString
       this.userConfigSearchForm.username = val.username
-      this.loadData()
+      this.searchUserConfigListData()
     },
     // 每页条数变化
-    handleSizeChange(val) {
+    handleUserConfigSizeChange(val) {
       this.userConfigSearchForm.pageSize = val
-      this.loadData()
+      this.searchUserConfigListData()
     },
     // 当前页变化
-    handleCurrentChange(val) {
+    handleUserConfigCurrentChange(val) {
       this.userConfigSearchForm.pageNumber = val
-      this.loadData()
+      this.searchUserConfigListData()
     },
-    handleSelectionChange(val) {
-      this.multipleSelection = val
+    handleUserConfigSelectionChange(val) {
+      this.userConfigMultipleSelection = val
     },
     addUserConfig() {
       const irender = {
@@ -285,15 +286,15 @@ export default {
       saveUserConfig(params).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
-        this.$refs['userConfigEditForm'].resetFields()
+        this.resetForm('userConfigEditForm')
         this.$message({
           message: '保存成功！',
           type: 'success'
         })
-        this.loadData()
+        this.searchUserConfigListData()
       }).catch(error => {
         console.log(error)
       })
@@ -319,61 +320,35 @@ export default {
       updateUserConfig(params).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
-        this.$refs['userConfigEditForm'].resetFields()
+        this.resetForm('userConfigEditForm')
         this.$message({
           message: '更新成功！',
           type: 'success'
         })
-        this.loadData()
+        this.searchUserConfigListData()
       }).catch(error => {
         console.log(error)
       })
     },
     delUserConfig() {
       // 拿到选中的数据
-      const val = this.multipleSelection
-      if (val.length > 0) {
-        this.$confirm('确定要删除吗?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          const irender = {
-            '45010': '参数不合法！',
-            '55010': '操作失败，请稍后尝试或联系客服！',
-            '55020': '操作失败，请稍后尝试或联系客服！',
-            '55030': '操作失败，请稍后尝试或联系客服！'
-          }
-          // 将选中数据遍历
-          let ids = ''
-          val.forEach(val => { ids += val.idString + ',' })
-          delUserConfig({ 'ids': ids }).then(response => {
-            const code = response.code
-            if (code !== '25200') {
-              this.$message.error(irender[code])
-              return
-            }
-            this.$message({
-              message: '操作成功！',
-              type: 'success'
-            })
-            this.loadData()
-          }).catch(error => {
-            console.log(error)
-          })
-        }).catch(() => {})
-      } else {
-        this.$message({
-          message: '请选择一条记录',
-          type: 'warning'
-        })
+      const val = this.userConfigMultipleSelection
+      const irender = {
+        '45010': '参数不合法！',
+        '55010': '操作失败，请稍后尝试或联系客服！',
+        '55020': '操作失败，请稍后尝试或联系客服！',
+        '55030': '操作失败，请稍后尝试或联系客服！'
       }
+      removeById(this, val, irender, delUserConfig, this.searchUserConfigListData)
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields()
     },
     // 用户选择器开始
-    loadUserChooserData() {
+    searchUserChooserListData() {
       const params = {
         username: this.userChooser.searchForm.name,
         pageNumber: this.userChooser.searchForm.pageNumber,
@@ -392,15 +367,15 @@ export default {
     },
     handleUserChooseSizeChange(val) {
       this.userChooser.searchForm.pageSize = val
-      this.loadUserChooserData()
+      this.searchUserChooserListData()
     },
     handleUserChooseCurrentChange(val) {
       this.userChooser.searchForm.pageNumber = val
-      this.loadUserChooserData()
+      this.searchUserChooserListData()
     },
     userChooserSearch(val) {
       this.userChooser.searchForm.name = val[0].model
-      this.loadUserChooserData()
+      this.searchUserChooserListData()
     },
     switchUserChooserVisible(val) {
       this.userChooser.visible = val

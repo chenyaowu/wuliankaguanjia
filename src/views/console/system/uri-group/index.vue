@@ -41,28 +41,28 @@
       </span>
     </el-tree>
 
-    <el-dialog title="添加资源组" :visible.sync="addUriGroupDialogForm.visible" width="50%">
-      <el-form ref="addUriGroupDialogForm" :model="addUriGroupDialogForm">
+    <el-dialog title="添加资源组" :visible.sync="addUriGroupForm.visible" width="50%">
+      <el-form ref="addUriGroupDialogForm" :model="addUriGroupForm">
         <el-form-item label="名称" label-width="80px" prop="name">
-          <el-input v-model.trim="addUriGroupDialogForm.name" placeholder="请输入名称" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUriGroupForm.name" placeholder="请输入名称" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="优先级" label-width="80px" prop="priority">
-          <el-input v-model.trim="addUriGroupDialogForm.priority" placeholder="请输入优先级" type="text" autocomplete="off" />
+          <el-input v-model.trim="addUriGroupForm.priority" placeholder="请输入优先级" type="text" autocomplete="off" />
         </el-form-item>
       </el-form>
-      <el-button @click="addUriGroupDialogForm.visible = false">取 消</el-button>
+      <el-button @click="addUriGroupForm.visible = false">取 消</el-button>
       <el-button type="primary" @click="doAddUriGroup">确 定</el-button>
     </el-dialog>
-    <el-dialog title="编辑资源组" :visible.sync="editUriDialogForm.visible" width="50%">
-      <el-form ref="editUriDialogForm" :model="editUriDialogForm">
+    <el-dialog title="编辑资源组" :visible.sync="editUriForm.visible" width="50%">
+      <el-form ref="editUriDialogForm" :model="editUriForm">
         <el-form-item label="名称" label-width="80px" prop="name">
-          <el-input v-model.trim="editUriDialogForm.name" placeholder="请输入名称" type="text" autocomplete="off" />
+          <el-input v-model.trim="editUriForm.name" placeholder="请输入名称" type="text" autocomplete="off" />
         </el-form-item>
         <el-form-item label="优先级" label-width="80px" prop="priority">
-          <el-input v-model.trim="editUriDialogForm.priority" placeholder="请输入优先级" type="text" autocomplete="off" />
+          <el-input v-model.trim="editUriForm.priority" placeholder="请输入优先级" type="text" autocomplete="off" />
         </el-form-item>
       </el-form>
-      <el-button @click="editUriDialogForm.visible = false">取 消</el-button>
+      <el-button @click="editUriForm.visible = false">取 消</el-button>
       <el-button type="primary" @click="doEditUri">确 定</el-button>
     </el-dialog>
 
@@ -186,18 +186,19 @@
 import { getUriGroup, saveUriGroup, updateUriGroup, deleteUriGroup } from '@/api/console/uri-group'
 import { searchSelectedUri, searchUnselectUri } from '@/api/console/uri'
 import { batchSaveUriGroupMap, deleteUriGroupMap } from '@/api/console/uri-group-map'
+import { vrender } from '@/utils'
 export default {
   name: 'ConsoleSystemUriGroupList',
   data() {
     return {
-      addUriGroupDialogForm: {
+      addUriGroupForm: {
         visible: false,
         name: '',
         priority: '',
         nodeData: Object,
         node: Object
       },
-      editUriDialogForm: {
+      editUriForm: {
         visible: false,
         id: '',
         pid: '',
@@ -249,7 +250,7 @@ export default {
         const code = response.code
         const data = response.data
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
         return resolve(data)
@@ -258,9 +259,9 @@ export default {
       })
     },
     append(node, data) {
-      this.addUriGroupDialogForm.visible = true
-      this.addUriGroupDialogForm.nodeData = data
-      this.addUriGroupDialogForm.node = node
+      this.addUriGroupForm.visible = true
+      this.addUriGroupForm.nodeData = data
+      this.addUriGroupForm.node = node
     },
     remove(node, data) {
       this.$confirm('确定要删除【' + data.name + '】吗?', '提示', {
@@ -275,7 +276,7 @@ export default {
         deleteUriGroup({ 'ids': data.id }).then(response => {
           const code = response.code
           if (code !== '25200') {
-            this.$message.error(irender[code])
+            vrender(this, irender, code)
             return
           }
           this.$message({
@@ -298,26 +299,26 @@ export default {
         '55010': '操作失败，请稍后尝试或联系客服！',
         '55020': '操作失败，请稍后尝试或联系客服！'
       }
-      console.log(this.addUriGroupDialogForm.nodeData)
+      console.log(this.addUriGroupForm.nodeData)
       const params = {
-        'name': this.addUriGroupDialogForm.name,
-        'type': this.addUriGroupDialogForm.nodeData.type,
-        'pid': this.addUriGroupDialogForm.nodeData.id,
-        'priority': this.addUriGroupDialogForm.priority
+        'name': this.addUriGroupForm.name,
+        'type': this.addUriGroupForm.nodeData.type,
+        'pid': this.addUriGroupForm.nodeData.id,
+        'priority': this.addUriGroupForm.priority
       }
       saveUriGroup(params).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
-        this.addUriGroupDialogForm.visible = false
+        this.addUriGroupForm.visible = false
         this.$message({
           message: '保存成功！',
           type: 'success'
         })
-        if (this.addUriGroupDialogForm.node.childNodes.length > 0) {
-          this.appendNewNode(this.addUriGroupDialogForm.nodeData.id, this.addUriGroupDialogForm.name)
+        if (this.addUriGroupForm.node.childNodes.length > 0) {
+          this.appendNewNode(this.addUriGroupForm.nodeData.id, this.addUriGroupForm.name)
         }
         this.$refs['addUriGroupDialogForm'].resetFields()
       }).catch(error => {
@@ -335,17 +336,17 @@ export default {
           this.$message.error(irender[code])
           return
         }
-        this.$refs.uriTree.append(data[0], this.addUriGroupDialogForm.nodeData)
+        this.$refs.uriTree.append(data[0], this.addUriGroupForm.nodeData)
       }).catch(error => {
         console.log(error)
       })
     },
     edit(node, data) {
-      this.editUriDialogForm.visible = true
-      this.editUriDialogForm.id = data.id
-      this.editUriDialogForm.name = data.name
-      this.editUriDialogForm.priority = data.priority
-      this.editUriDialogForm.nodeData = node
+      this.editUriForm.visible = true
+      this.editUriForm.id = data.id
+      this.editUriForm.name = data.name
+      this.editUriForm.priority = data.priority
+      this.editUriForm.nodeData = node
     },
     doEditUri() {
       const irender = {
@@ -360,9 +361,9 @@ export default {
         '55030': '操作失败，请稍后尝试或联系客服！'
       }
       const params = {
-        'name': this.editUriDialogForm.name,
-        'id': this.editUriDialogForm.id,
-        'priority': this.editUriDialogForm.priority
+        'name': this.editUriForm.name,
+        'id': this.editUriForm.id,
+        'priority': this.editUriForm.priority
       }
       updateUriGroup(params).then(response => {
         const code = response.code
@@ -370,15 +371,15 @@ export default {
           this.$message.error(irender[code])
           return
         }
-        this.addUriGroupDialogForm.visible = false
+        this.addUriGroupForm.visible = false
         this.$message({
           message: '保存成功！',
           type: 'success'
         })
-        this.editUriDialogForm.nodeData.data.priority = this.editUriDialogForm.priority
-        this.editUriDialogForm.nodeData.data.name = this.editUriDialogForm.name
-        this.editUriDialogForm.nodeData.data.id = this.editUriDialogForm.id
-        this.editUriDialogForm.visible = false
+        this.editUriForm.nodeData.data.priority = this.editUriForm.priority
+        this.editUriForm.nodeData.data.name = this.editUriForm.name
+        this.editUriForm.nodeData.data.id = this.editUriForm.id
+        this.editUriForm.visible = false
         this.$refs['editUriDialogForm'].resetFields()
       }).catch(error => {
         console.log(error)
@@ -400,7 +401,7 @@ export default {
         const code = response.code
         const data = response.data
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
         this.uriForm.tableData = data.content
@@ -443,7 +444,7 @@ export default {
         deleteUriGroupMap(params).then(response => {
           const code = response.code
           if (code !== '25200') {
-            this.$message.error(irender[code])
+            vrender(this, irender, code)
             return
           }
           this.$message({
@@ -476,7 +477,7 @@ export default {
         const code = response.code
         const data = response.data
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
         this.uriForm.addForm.tableData = data.content
@@ -522,7 +523,7 @@ export default {
       batchSaveUriGroupMap(params).then(response => {
         const code = response.code
         if (code !== '25200') {
-          this.$message.error(irender[code])
+          vrender(this, irender, code)
           return
         }
         this.$message({

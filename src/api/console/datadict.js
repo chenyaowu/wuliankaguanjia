@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 获取资源列表
 export function getDatadict(data) {
   return request({
-    url: '/api/console/datadict/find',
+    url: '/console/datadict/find',
     method: 'get',
     params: data
   })
@@ -11,14 +11,14 @@ export function getDatadict(data) {
 
 export function saveDatadict(data) {
   return request({
-    url: '/api/console/datadict/save',
+    url: '/console/datadict/save',
     method: 'post',
     params: data
   })
 }
 export function updateDatadict(data) {
   return request({
-    url: '/api/console/datadict/update',
+    url: '/console/datadict/update',
     method: 'post',
     params: data
   })
@@ -26,7 +26,7 @@ export function updateDatadict(data) {
 
 export function deleteDatadict(data) {
   return request({
-    url: '/api/console/datadict/delete',
+    url: '/console/datadict/delete',
     method: 'post',
     params: data
   })

@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function batchSaveUriGroupMap(data) {
   return request({
-    url: '/api/console/uri/group/map/batch/save',
+    url: '/console/uri/group/map/batch/save',
     method: 'post',
     params: data
   })
@@ -10,7 +10,7 @@ export function batchSaveUriGroupMap(data) {
 
 export function deleteUriGroupMap(data) {
   return request({
-    url: '/api/console/uri/group/map/delete',
+    url: '/console/uri/group/map/delete',
     method: 'post',
     params: data
   })
