@@ -125,6 +125,12 @@ export const asyncRoutes = [
         component: () => import('@/views/console/system/product/index'),
         name: 'ConsoleSystemProductList',
         meta: { title: '套餐管理', icon: 'el-icon-s-data', uri: 'console.page.product.list' }
+      },
+      {
+        path: 'gateway/product/list',
+        component: () => import('@/views/console/system/gateway-product/index'),
+        name: 'ConsoleSystemGatewayProductList',
+        meta: { title: '网关套餐管理', icon: 'el-icon-menu', uri: 'console.page.gateway.product.list' }
       }
     ]
   },
